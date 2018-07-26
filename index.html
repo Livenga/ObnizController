@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="main.css">
+
+    <script src="https://obniz.io/js/jquery-3.2.1.min.js"></script>
+    <script src="https://unpkg.com/obniz@1.8.2/obniz.js" crossorigin="anonymous"></script>
+    <script src="init.js"></script>
+
+    <title>Hello, obniz</title>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <div class="obnizConfig">
+        <div>
+          <form name="f_obniz" action="">
+            <h3 class="obnizHead">Obniz Config</h3>
+            <table class="obnizConfig-tbl">
+              <tbody>
+                <tr>
+                  <td>Staus</td>
+                  <td colspan="2">
+                    <div id="obniz-debug"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Obniz ID</td>
+                  <td>
+                    <input name="id" type="text" value="">
+                  </td>
+                  <td>
+                    <button id="btn_connect" class="" type="button">Connect</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Options</td>
+                  <td colspan="2">
+                    <input id="cbx_auto_connect" type="checkbox" checked="true">
+                    <label name="" for="cbx_auto_connect">Auto Connect</label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </div> <!-- div -->
+
+        <!--
+          -
+          - ディスプレイ, テキスト描画
+          -
+        -->
+
+        <div class="obnizProp">
+          <h3 class="obnizHead">display</h3>
+          <form name="obniz_display" action="">
+            <table>
+              <tr>
+                <td>Drawing Text</td>
+                <td><input name="text" type="text" value=""></td>
+                <td>
+                  <button id="btn_draw_text" name="update" type="button">Update</button>
+                </td>
+              </tr>
+              <tr>
+                <td>RealTime</td>
+                <td colspan="2">
+                  <textarea name="realtime_text" cols="16" rows="4"></textarea>
+                </td>
+              </tr>
+            </table>
+          </form>
+        </div> <!-- div.obnizProp -->
+
+        <!--
+          -
+          - display line(線)の描画
+          -
+          -->
+        <div class="obnizProp">
+          <h3 class="obnizHead">line</h3>
+          <form name="obniz_line" action="">
+            <table>
+              <tr>
+                <td colspan="2">
+                  <input id="line_is_clear" name="is_clear" type="checkbox">
+                  <label for="line_is_clear">is clear</label>
+                </td>
+                <td>
+                  <button name="run" type="button">Update</button>
+                </td>
+              </tr>
+              <tr>
+                <td>(x0, y0)</td>
+                <td>x: <input name="x0" type="number" value="0"></td>
+                <td>y: <input name="y0" type="number" value="0"></td>
+              </tr>
+              <tr>
+                <td>(x1, y1)</td>
+                <td>x: <input name="x1" type="number" value="0"></td>
+                <td>y: <input name="y1" type="number" value="0"></td>
+              </tr>
+            </table>
+          </form>
+        </div>
+
+        <!--
+          -
+          - サーボモータ制御
+          -
+        -->
+        <div class="obnizProp">
+          <h3 class="obnizHead">Servomotor</h3>
+
+          <form name="obniz_servo" action="">
+            <table>
+              <tbody>
+                <tr>
+                  <td>Pin</td>
+                  <td colspan="1">
+                    Vcc: <input name="pvcc" min="0" max="12" type="number" value="0">
+                    Signal: <input name="psignal" min="0" max="12" type="number" value="1">
+                    GND: <input name="pgnd" min="0" max="12" type="number" value="2">
+                  </td>
+                  <td>
+                    <button id="btn_servo_apply" name="servo_apply" type="button">Apply</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Angle</td>
+                  <td>
+                    <input name="angle_range" min=0" max="180" step="1" type="range" value="0" style="width: 100%;">
+                  </td>
+                  <td>
+                    <input name="angle_number" min="0" max="180" type="number" value="0">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form> <!-- form@obniz_servo -->
+        </div> <!-- div.obnizProp -->
+
+      </div> <!-- div.obnizConfig -->
+    </div> <!-- div.wrap -->
+
+    <script>
+      (function(w, d) {
+        if(!w.hasOwnProperty('obniz')) {
+          w.obniz = null;
+        }
+
+        w.addEventListener('load', function(e) {
+          // 初期化
+          init(w, d);
+
+          // 画面表示時に ``Obniz ID'' を入力する input にフォーカスする
+          d.forms['f_obniz'].id.focus();
+        });
+      }(window, document));
+
+
+/**
+*/
+function easy_animation(ms) {
+  if(!window.obniz) {
+    console.log('not initialized!');
+    return;
+  }
+
+  let n = setInterval(function() {
+    if(!window.hasOwnProperty('anim_count')) {
+      window.anim_count = 0;
+    }
+
+    let chr = '|';
+    switch(window.anim_count) {
+      case 0:
+        chr = '|'; break;
+      case 1:
+        chr = '/'; break;
+      case 2:
+        chr = '-'; break;
+      case 3:
+        chr = '\\'; break;
+    }
+    if(window.anim_count < 3) {
+      window.anim_count++;
+    } else {
+      window.anim_count = 0;
+    }
+
+    obniz.display.clear();
+    obniz.display.print(chr);
+  }, ms);
+  console.log('interval number: ' + n);
+}
+    </script>
+  </body>
+</html>
