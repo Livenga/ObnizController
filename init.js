@@ -125,12 +125,20 @@ let events = (function(w, d) {
   }
 
   //
+  function _apply_servomotoer(val) {
+    if(ObnizElems.servomotor != null) {
+      ObnizElems.servomotor.angle(val);
+    }
+  }
+
+  //
   function _oninput_servo_range(e) {
     let num = this.value - 0;
 
     if(num >= 0 && num <= 180) {
       d.forms.obniz_servo.angle_number.value = num;
     }
+    _apply_servomotoer(num);
   }
 
   function _oninput_servo_number(e) {
@@ -139,6 +147,7 @@ let events = (function(w, d) {
     if(num >= 0 && num <= 180) {
       d.forms.obniz_servo.angle_range.value = num;
     }
+    _apply_servomotoer(num);
   }
 
   function _onchange_image_file(e) {
