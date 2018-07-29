@@ -143,6 +143,33 @@
           </form> <!-- form@obniz_servo -->
         </div> <!-- div.obnizProp -->
 
+        <!--
+          -
+          - キャンバス描画
+          -
+          -->
+        <div class="obnizProp">
+          <h3 class="obnizHead">Canvas</h3>
+
+          <form name="canvas" action="">
+            <table>
+              <tbody>
+                <tr>
+                  <td>File Path</td>
+                  <td><input name="file" type="file"></td>
+                  <td><button name="update" type="button">Update</button></td>
+                </tr>
+                <tr>
+                  <td colspan="3">
+                    <img id="loaded_image" src="" alt="" style="display: none;">
+                    <canvas id="canvas" class="cv" width=128 height=64></canvas>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+
       </div> <!-- div.obnizConfig -->
     </div> <!-- div.wrap -->
 

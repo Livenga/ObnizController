@@ -35,3 +35,8 @@ input[type="text"], input[type="number"] {
 
 .obnizConfig-tbl {}
 .obnizConfig-tbl tr td {}
+
+.cv {
+  padding: 3px;
+  border: 1px solid #ccc;
+}

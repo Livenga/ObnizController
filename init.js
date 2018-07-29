@@ -141,6 +141,50 @@ let events = (function(w, d) {
     }
   }
 
+  function _onchange_image_file(e) {
+    let f = e.target.files[0];
+    let fr = new FileReader();
+
+    fr.onloadend = function(e_loaded) {
+      //console.log(e_loaded);
+
+      let cv  = d.getElementById('canvas');
+      let ctx = cv.getContext('2d');
+      let img = d.getElementById('loaded_image');
+
+      img.onload = function(e_onload) {
+        ctx.drawImage(img, 0, 0, this.width, this.height, 0, 0, 128, 64);
+        let image_data = ctx.getImageData(0, 0, cv.width, cv.height);
+        let pixs       = image_data.data;
+
+        for(let i = 0; i < cv.height; ++i) {
+          for(let j = 0; j < cv.width; ++j) {
+            let o = i * cv.width + j;
+            let r, g, b, gray;
+
+            r = pixs[o * 4 + 0];
+            g = pixs[o * 4 + 1];
+            b = pixs[o * 4 + 2];
+
+            gray = r * 0.3 + g * 0.59 + b * 0.11;
+            gray = (gray > 0xFF) ? 0xFF : (gray < 0x00) ? 0 : gray;
+
+            pixs[o * 4 + 0] = gray;
+            pixs[o * 4 + 1] = gray;
+            pixs[o * 4 + 2] = gray;
+          }
+        }
+
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.putImageData(image_data, 0, 0);
+      }
+      img.src = e_loaded.target.result;
+    }
+
+    //fr.readAsText(f);
+    fr.readAsDataURL(f);
+
+  }
 
   return {
     onClickObnizConnect:      _onclick_obniz_connect,
@@ -150,7 +194,8 @@ let events = (function(w, d) {
     onClickDisplayLineUpdate: _onclick_display_line_update,
     onClickServoApply:        _onclick_servo_apply,
     onInputServoRange:        _oninput_servo_range,
-    onInputServoNumber:       _oninput_servo_number
+    onInputServoNumber:       _oninput_servo_number,
+    onChangeImageFile:        _onchange_image_file
   };
 }(window, document));
 
@@ -168,11 +213,11 @@ function init(w, d) {
   d.getElementById('btn_draw_text')
     .addEventListener('click', events.onClickDisplayUpdate);
   d.forms.obniz_display.realtime_text
-  .addEventListener('input', events.onInputDisplayRealTime);
+    .addEventListener('input', events.onInputDisplayRealTime);
 
   // ディスプレイ line
   d.forms.obniz_line.run
-  .addEventListener('click', events.onClickDisplayLineUpdate);
+    .addEventListener('click', events.onClickDisplayLineUpdate);
 
 
   // サーボモータ
@@ -185,4 +230,13 @@ function init(w, d) {
   d.forms.obniz_servo.angle_number
     .addEventListener('input', events.onInputServoNumber);
 
+  //
+  d.forms.canvas.file
+    .addEventListener('change', events.onChangeImageFile);
+  d.forms.canvas.update
+    .addEventListener('click', function(e) {
+      if(w.hasOwnProperty('obniz') && w.obniz != null) {
+        obniz.display.draw(d.getElementById('canvas').getContext('2d'));
+      }
+    });
 }
