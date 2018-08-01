@@ -36,13 +36,6 @@
                     <button id="btn_connect" class="" type="button">Connect</button>
                   </td>
                 </tr>
-                <tr>
-                  <td>Options</td>
-                  <td colspan="2">
-                    <input id="cbx_auto_connect" type="checkbox" checked="true">
-                    <label name="" for="cbx_auto_connect">Auto Connect</label>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </form>
@@ -179,7 +172,7 @@
           w.obniz = null;
         }
 
-        w.addEventListener('load', function(e) {
+        w.addEventListener('load', function(event) {
           // 初期化
           init(w, d);
 
@@ -187,43 +180,6 @@
           d.forms['f_obniz'].id.focus();
         });
       }(window, document));
-
-
-/**
-*/
-function easy_animation(ms) {
-  if(!window.obniz) {
-    console.log('not initialized!');
-    return;
-  }
-
-  let n = setInterval(function() {
-    if(!window.hasOwnProperty('anim_count')) {
-      window.anim_count = 0;
-    }
-
-    let chr = '|';
-    switch(window.anim_count) {
-      case 0:
-        chr = '|'; break;
-      case 1:
-        chr = '/'; break;
-      case 2:
-        chr = '-'; break;
-      case 3:
-        chr = '\\'; break;
-    }
-    if(window.anim_count < 3) {
-      window.anim_count++;
-    } else {
-      window.anim_count = 0;
-    }
-
-    obniz.display.clear();
-    obniz.display.print(chr);
-  }, ms);
-  console.log('interval number: ' + n);
-}
     </script>
   </body>
 </html>

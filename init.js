@@ -5,44 +5,44 @@ let ObnizElems = (function(w, d) {
 }(window, document));
 
 
-let events = (function(w, d) {
-  //
-  function _onclick_obniz_connect(e) {
+// コールバックイベント
+let callbacks = (function(w, d) {
+  /** ``` onClickObnizConnect
+   * Obniz への接続
+   * @param event
+   */
+  function onClickObnizConnect(event) {
     let f = d.forms['f_obniz'];
-
-    if(f === undefined) {
-      return;
-    }
 
     if(f.id.value.length === 0) {
       console.log('Obniz ID 未入力');
       return;
     }
 
+    if(w.obniz !== null) {
+      throw 'Obniz は接続済み.';
+    }
+
     try {
       w.obniz = new Obniz(f.id.value);
-
       // 自動接続
       w.obniz.options.auto_connect = d.forms.f_obniz.cbx_auto_connect.checked;
+      this.disabled = true;
     } catch(except) {
       console.log(except);
     }
-  }
+  } // '''
 
   //
-  function _onchange_auto_connect(e) {
-    if(w.obniz === undefined || w.obniz === null) {
-      return;
+  // ディスプレイ へのテキスト描画
+  /** ``` onClickDisplayUpdate
+   * @param event
+   */
+  function onClickDisplayUpdate(event) {
+    if(w.obniz === null) {
+      throw "Obniz に接続されていません."
     }
 
-    w.obniz.options.auto_connect = this.checked;
-  }
-
-  //
-  // ディスプレイ
-  //
-
-  function _onclick_display_update(e) {
     let f = d.forms.obniz_display;
 
     try {
@@ -56,9 +56,18 @@ let events = (function(w, d) {
     } catch(except) {
       console.log('* onClickDisplayUpdate: ' + except);
     }
-  }
+  } // '''
 
-  function _oninput_display_realtime(e) {
+  /** ``` onInputRealTimeText
+   * textarea@realtime_text に文字が入力されるたびに, 即時更新を行う.
+   *
+   * @param event
+   */
+  function onInputRealTimeText(e) {
+    if(w.obniz === null) {
+      throw "Obniz に接続されていません.";
+    }
+
     try {
       let text = d.forms.obniz_display.realtime_text.value,
         lines = text.split('\n');
@@ -71,12 +80,20 @@ let events = (function(w, d) {
       }
       //console.log(text.split('\n').length);
     } catch(except) {
-      console.log('* onInputDisplayRealTime: ' + except);
+      console.log('* onInputRealTimeText: ' + except);
     }
-  }
+  } // '''
 
-  // line
-  function _onclick_display_line_update(e) {
+  /** ``` onClickLineUpdate
+   * ディスプレイへのライン描画
+   *
+   * @param event
+   */
+  function onClickLineUpdate(event) {
+    if(w.obniz === null) {
+      throw "Obniz に接続されていません.";
+    }
+
     let f = d.forms.obniz_line;
 
     if(f.is_clear.checked === true) {
@@ -87,75 +104,18 @@ let events = (function(w, d) {
       f.x0.value - 0, f.y0.value - 0,
       f.x1.value - 0, f.y1.value - 0
     );
-  }
+  } // '''
 
   //
-  // サーボモータ
-  //
-
-  //
-  function _onclick_servo_apply(e) {
-    let _f = d.forms.obniz_servo;
-    let pins = [
-      _f.pvcc.value    - 0,
-      _f.psignal.value - 0,
-      _f.pgnd.value    - 0
-    ];
-
-
-    pins.forEach(function(value, index, self) {
-      if(index !== self.lastIndexOf(value)) {
-        throw '重複した値(' + value + ')を検出.'
-      }
-    });
-
-    try {
-      ObnizElems.servomotor = w.obniz.wired(
-        'ServoMotor',
-        {
-          vcc:    _f.pvcc.value    - 0,
-          signal: _f.psignal.value - 0,
-          gnd:    _f.pgnd.value    - 0
-        }
-      );
-    } catch(except) {
-      console.log('* onClickServoApply: ' + except);
-      ObnizElems.servomotor = null;
-    }
-  }
-
-  //
-  function _apply_servomotoer(val) {
-    if(ObnizElems.servomotor != null) {
-      ObnizElems.servomotor.angle(val);
-    }
-  }
-
-  //
-  function _oninput_servo_range(e) {
-    let num = this.value - 0;
-
-    if(num >= 0 && num <= 180) {
-      d.forms.obniz_servo.angle_number.value = num;
-    }
-    _apply_servomotoer(num);
-  }
-
-  function _oninput_servo_number(e) {
-    let num = this.value - 0;
-
-    if(num >= 0 && num <= 180) {
-      d.forms.obniz_servo.angle_range.value = num;
-    }
-    _apply_servomotoer(num);
-  }
-
-  function _onchange_image_file(e) {
-    let f = e.target.files[0];
+  // ディスプレイへの画像ファイルの描画
+  /** ``` onChangeImageFile
+   * @param event
+   */
+  function onChangeImageFile(event) {
+    let f = event.target.files[0];
     let fr = new FileReader();
 
     fr.onloadend = function(e_loaded) {
-      //console.log(e_loaded);
 
       let cv  = d.getElementById('canvas');
       let ctx = cv.getContext('2d');
@@ -192,19 +152,86 @@ let events = (function(w, d) {
 
     //fr.readAsText(f);
     fr.readAsDataURL(f);
+  } // '''
 
-  }
+  //
+  // サーボモータ
+
+  /** ``` onClickServoApply
+   * @param event
+   */
+  function onClickServoApply(event) {
+    let f = d.forms.obniz_servo;
+    let pins = [
+      f.pvcc.value    - 0,
+      f.psignal.value - 0,
+      f.pgnd.value    - 0
+    ];
+
+    pins.forEach(function(value, index, self) {
+      if(index !== self.lastIndexOf(value)) {
+        throw '重複した値(' + value + ')を検出.'
+      }
+    });
+
+    try {
+      ObnizElems.servomotor = w.obniz.wired(
+        'ServoMotor',
+        {
+          vcc:    _f.pvcc.value    - 0,
+          signal: _f.psignal.value - 0,
+          gnd:    _f.pgnd.value    - 0
+        }
+      );
+    } catch(except) {
+      console.log('* onClickServoApply: ' + except);
+      ObnizElems.servomotor = null;
+    }
+  } // '''
+
+  /** ``` applyServoMotor
+   * @param val 角度
+   */
+  function applyServoMotor(val) {
+    if(ObnizElems.servomotor != null) {
+      ObnizElems.servomotor.angle(val);
+    }
+  } // '''
+
+  /** ``` onInputServoRange
+   * @param event
+   */
+  function onInputServoRange(event) {
+    let num = this.value - 0;
+
+    if(num >= 0 && num <= 180) {
+      d.forms.obniz_servo.angle_number.value = num;
+    }
+    applyServoMotor(num);
+  } // '''
+
+  /** ``` onInputServoNumber
+   * @param event
+   */
+  function onInputServoNumber(event) {
+    let num = this.value - 0;
+
+    if(num >= 0 && num <= 180) {
+      d.forms.obniz_servo.angle_range.value = num;
+    }
+    applyServoMotor(num);
+  } // '''
+
 
   return {
-    onClickObnizConnect:      _onclick_obniz_connect,
-    onChangeAutoConnect:      _onchange_auto_connect,
-    onClickDisplayUpdate:     _onclick_display_update,
-    onInputDisplayRealTime:   _oninput_display_realtime,
-    onClickDisplayLineUpdate: _onclick_display_line_update,
-    onClickServoApply:        _onclick_servo_apply,
-    onInputServoRange:        _oninput_servo_range,
-    onInputServoNumber:       _oninput_servo_number,
-    onChangeImageFile:        _onchange_image_file
+    onClickObnizConnect:  onClickObnizConnect,
+    onClickDisplayUpdate: onClickDisplayUpdate,
+    onInputRealTimeText:  onInputRealTimeText,
+    onClickLineUpdate:    onClickLineUpdate,
+    onClickServoApply:    onClickServoApply,
+    onInputServoRange:    onInputServoRange,
+    onInputServoNumber:   onInputServoNumber,
+    onChangeImageFile:    onChangeImageFile
   };
 }(window, document));
 
@@ -212,36 +239,31 @@ let events = (function(w, d) {
 
 function init(w, d) {
   d.getElementById('btn_connect')
-    .addEventListener('click', events.onClickObnizConnect);
-
-  d.getElementById('cbx_auto_connect')
-    .addEventListener('change', events.onChangeAutoConnect);
-
+    .addEventListener('click', callbacks.onClickObnizConnect);
 
   // ディスプレイ
   d.getElementById('btn_draw_text')
-    .addEventListener('click', events.onClickDisplayUpdate);
+    .addEventListener('click', callbacks.onClickDisplayUpdate);
   d.forms.obniz_display.realtime_text
-    .addEventListener('input', events.onInputDisplayRealTime);
+    .addEventListener('input', callbacks.onInputRealTimeText);
 
   // ディスプレイ line
   d.forms.obniz_line.run
-    .addEventListener('click', events.onClickDisplayLineUpdate);
-
+    .addEventListener('click', callbacks.onClickLineUpdate);
 
   // サーボモータ
   d.getElementById('btn_servo_apply')
-    .addEventListener('click', events.onClickServoApply);
+    .addEventListener('click', callbacks.onClickServoApply);
 
   d.forms.obniz_servo.angle_range
-    .addEventListener('input', events.onInputServoRange);
+    .addEventListener('input', callbacks.onInputServoRange);
 
   d.forms.obniz_servo.angle_number
-    .addEventListener('input', events.onInputServoNumber);
+    .addEventListener('input', callbacks.onInputServoNumber);
 
-  //
+  // 画像描画用 input[type = 'file']
   d.forms.canvas.file
-    .addEventListener('change', events.onChangeImageFile);
+    .addEventListener('change', callbacks.onChangeImageFile);
   d.forms.canvas.update
     .addEventListener('click', function(e) {
       if(w.hasOwnProperty('obniz') && w.obniz != null) {
